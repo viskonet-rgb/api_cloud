@@ -3,7 +3,7 @@ FROM eclipse-temurin:17-jre-focal AS runtime
 RUN useradd -m appuser
 WORKDIR /app
 # copy jar from builder
-COPY --from=builder /workspace/build/libs/api_cloud-0.0.1-SNAPSHOT.jar app.jar
+COPY /workspace/build/libs/api_cloud-0.0.1-SNAPSHOT.jar app.jar
 RUN chown appuser:appuser /app/app.jar
 USER appuser
  
