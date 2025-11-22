@@ -1,16 +1,30 @@
-FROM eclipse-temurin:17-jre-focal AS runtime
-# create non-root user
-RUN useradd -m appuser
-WORKDIR /app
-# copy jar from builder
-COPY /workspace/build/libs/api_cloud-0.0.1-SNAPSHOT.jar app.jar
-RUN chown appuser:appuser /app/app.jar
-USER appuser
+# ---------- Stage 1: Build (builder image) ----------
+FROM gradle:8.8-jdk17 AS builder
  
-# Expose port the app uses
+WORKDIR /app
+ 
+# Copy only necessary files for dependency download
+COPY build.gradle ./
+COPY src ./src
+ 
+# Build application
+RUN gradle clean build --no-daemon --stacktrace
+ 
+ 
+# ---------- Stage 2: Run (runtime image) ----------
+FROM eclipse-temurin:17-jre-alpine
+ 
+WORKDIR /app
+ 
+# Copy built artifact from builder stage
+COPY --from=builder /app/build/libs/*.jar app.jar
+ 
+# Expose container port (optional)
 EXPOSE 8080
  
-# Allow passing JVM options at runtime via env (optional)
-ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:MaxRAMPercentage=75.0"
+# Health check (optional but recommended)
+HEALTHCHECK --interval=30s --timeout=5s \
+  CMD wget -q http://localhost:8080/actuator/health || exit 1
  
-ENTRYPOINT [ "sh", "-c", "exec java $JAVA_OPTS -jar /app/app.jar" ]
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
