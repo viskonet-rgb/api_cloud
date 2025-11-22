@@ -3,8 +3,7 @@ FROM eclipse-temurin:17-jre-focal AS runtime
 RUN useradd -m appuser
 WORKDIR /app
 # copy jar from builder
-ARG JAR_FILE=build/libs/*.jar
-COPY --from=builder ${JAR_FILE} app.jar
+COPY --from=builder /workspace/build/libs/*.jar app.jar
 RUN chown appuser:appuser /app/app.jar
 USER appuser
  
