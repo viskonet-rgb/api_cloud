@@ -4,7 +4,7 @@ RUN useradd -m appuser
 WORKDIR /app
 # copy jar from builder
 ARG JAR_FILE=build/libs/*.jar
-COPY --from=builder /home/gradle/project/${JAR_FILE} app.jar
+COPY --from=builder ${JAR_FILE} app.jar
 RUN chown appuser:appuser /app/app.jar
 USER appuser
  
